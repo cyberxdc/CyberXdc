@@ -1,18 +1,22 @@
-on: push
-branch:
+on:
+  push:
+    branches:
       - main
-name: Production deployement on push to main branch
+
+name: Production deployment on push to main branch
+
 jobs:
   web-deploy:
     name: Deploy
     runs-on: ubuntu-latest
     steps:
-    - name: Get latest code
-      uses: actions/checkout@v3
+      - name: Get latest code
+        uses: actions/checkout@v3
     
-    - name: Sync files
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-      with:
-        server: 109.205.181.32
-        username: test_pixelsscreen_com
-        password: 5bBGbTRHatSNNBt8
+      - name: Sync files
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: 109.205.181.32
+          username: test_pixelsscreen_com
+          password: ${{ secrets.FTP_PASSWORD }}
+
