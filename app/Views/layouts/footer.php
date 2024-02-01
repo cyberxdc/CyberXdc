@@ -1,3 +1,3 @@
-<script src="<?= base_url('assets/js/scripts.js'); ?>"></script>
+<script src="<?= base_url('public/assets/js/scripts.js'); ?>"></script>
 </body>
 </html>
