@@ -26,5 +26,5 @@ jobs:
     - name: Run Tests
       run: |
         # Replace with your test command
-        phpunit
+        composer update
 
