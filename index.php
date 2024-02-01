@@ -1,74 +1,87 @@
 <?php
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+// Check PHP version.
+$minPhpVersion = '7.4'; // If you update this, don't forget to update `spark`.
+if (version_compare(PHP_VERSION, $minPhpVersion, '<')) {
+    $message = sprintf(
+        'Your PHP version must be %s or higher to run CodeIgniter. Current version: %s',
+        $minPhpVersion,
+        PHP_VERSION
+    );
 
-// Include PHPMailer autoload file
-require 'vendor/autoload.php';
+    exit($message);
+}
 
-// Get visitor information
-$ipAddress = $_SERVER['REMOTE_ADDR'];
-$userAgent = $_SERVER['HTTP_USER_AGENT'];
-$referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : "N/A";
+// Path to the front controller (this file)
+define('FCPATH', __DIR__ . DIRECTORY_SEPARATOR);
 
-// Display visitor information
-echo "<hr>";
-echo "<p><strong>IP Address:</strong> $ipAddress</p>";
-echo "<p><strong>User Agent:</strong> $userAgent</p>";
-echo "<p><strong>Referer:</strong> $referer</p>";
-echo "<hr>";
-// Create a new PHPMailer instance
-// $mail = new PHPMailer(true);
+// Ensure the current directory is pointing to the front controller's directory
+if (getcwd() . DIRECTORY_SEPARATOR !== FCPATH) {
+    chdir(FCPATH);
+}
 
-// try {
-//     // Set mailer to use SMTP
-//     $mail->isSMTP();
+/*
+ *---------------------------------------------------------------
+ * BOOTSTRAP THE APPLICATION
+ *---------------------------------------------------------------
+ * This process sets up the path constants, loads and registers
+ * our autoloader, along with Composer's, loads our constants
+ * and fires up an environment-specific bootstrapping.
+ */
 
-//     // Specify the SMTP server
-//     $mail->Host = 'pixelsscreen.com';
+// Load our paths config file
+// This is the line that might need to be changed, depending on your folder structure.
+require FCPATH . '/app/Config/Paths.php';
+// ^^^ Change this line if you move your application folder
 
-//     // Enable SMTP authentication
-//     $mail->SMTPAuth = true;
+$paths = new Config\Paths();
 
-//     // SMTP username (your email address)
-//     $mail->Username = 'no-reply@pixelsscreen.com';
+// Location of the framework bootstrap file.
+require rtrim($paths->systemDirectory, '\\/ ') . DIRECTORY_SEPARATOR . 'bootstrap.php';
 
-//     // SMTP password
-//     $mail->Password = 'ya0ds4v7B';
+// Load environment settings from .env files into $_SERVER and $_ENV
+require_once SYSTEMPATH . 'Config/DotEnv.php';
+(new CodeIgniter\Config\DotEnv(ROOTPATH))->load();
 
-//     // Enable TLS encryption, `ssl` also accepted
-//     $mail->SMTPSecure = 'tls';
+// Define ENVIRONMENT
+if (! defined('ENVIRONMENT')) {
+    define('ENVIRONMENT', env('CI_ENVIRONMENT', 'production'));
+}
 
-//     // TCP port to connect to
-//     $mail->Port = 587;
+// Load Config Cache
+// $factoriesCache = new \CodeIgniter\Cache\FactoriesCache();
+// $factoriesCache->load('config');
+// ^^^ Uncomment these lines if you want to use Config Caching.
 
-//     // Set sender and recipient
-//     $mail->setFrom('no-reply@pixelsscreen.com', 'pixelsscreen');
-//     $mail->addAddress('cyberxdc007@gmail.com', 'Recipient');
+/*
+ * ---------------------------------------------------------------
+ * GRAB OUR CODEIGNITER INSTANCE
+ * ---------------------------------------------------------------
+ *
+ * The CodeIgniter class contains the core functionality to make
+ * the application run, and does all the dirty work to get
+ * the pieces all working together.
+ */
 
-//     // Set email subject and body
-//     $mail->Subject = 'Test Email via SMTP';
-//     $mail->Body    = 'This is a test email sent via SMTP using PHPMailer.';
+$app = Config\Services::codeigniter();
+$app->initialize();
+$context = is_cli() ? 'php-cli' : 'web';
+$app->setContext($context);
 
-//     // Send the email
-//     $mail->send();
+/*
+ *---------------------------------------------------------------
+ * LAUNCH THE APPLICATION
+ *---------------------------------------------------------------
+ * Now that everything is set up, it's time to actually fire
+ * up the engines and make this app do its thang.
+ */
 
-//     echo 'Email has been sent successfully.';
-// } catch (Exception $e) {
-//     echo "Error: {$mail->ErrorInfo}";
-// }
-?>
+$app->run();
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
+// Save Config Cache
+// $factoriesCache->save('config');
+// ^^^ Uncomment this line if you want to use Config Caching.
 
-<h1>Dharmendra chik baraik </h1>
-    
-</body>
-</html>
+// Exits the application, setting the exit code for CLI-based applications
+// that might be watching.
+exit(EXIT_SUCCESS);
